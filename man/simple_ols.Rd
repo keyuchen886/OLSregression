@@ -2,7 +2,7 @@
 % Please edit documentation in R/simple_ols.R
 \name{simple_ols}
 \alias{simple_ols}
-\title{Compute the OLS linear regression for a given X and y. This is the most simple case of ordinary least square. In fact, this function will not perform any error checking because it's used as a internal function of least_square.}
+\title{simple_ols}
 \usage{
 simple_ols(X, y)
 }
@@ -19,5 +19,6 @@ Compute the OLS linear regression for a given X and y. This is the most simple c
 }
 \examples{
 simple_ols(matrix(c(1,3,7,4,6,3),3,2), c(3,1,2))
-
+simple_ols(data.frame(c(1,3,7,4,6,3),3,2) , c(3,1,2))
+In fact, using the data.frame object will raise an error.
 }

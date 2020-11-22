@@ -1,68 +1,21 @@
+#'linear_regression
+#'
+#'This function will do almost exactly the same thing as the famous lm function.
+#'To be specific, It will compute linear regression with the given data.
+#'The data can have factor type and our function will automatically transform it by one-hot encoding.
+#'It will also compute feature siginificance through t-test and an overall F-test just like the lm function.
+#'
+#'@param X input X, it should be a data.frame object with/without colnames.
+#'@param y input y, this is the respond variable.
+#'@return it will return a list with model coefficients, t statistics and pvalue of every coefficient, and F-stat for the overall model. It will also return R^2 and adjusted R^2, just like everything lm function will return.
+#'@examples
+#'library(MASS)
+#'X=Boston[,-ncol(Boston)]
+#'y=Boston[,ncol(Boston)]
+#'linear_regression(X,y)
+#'In fact, using object other than a data.frame will raise an error.
+#'@export
 
-compute_standard_error = function(X, y, betas){
-  #this function will take input of matrix x and respond y
-  #it will compute the standard error along with the residual.
-  intercept = rep(1, length(y) )
-  X_full = cbind( intercept , X )
-  residual = (y- X_full%*%betas)
-  esti_mse = sum(residual^2)/ (nrow(X_full) - ncol(X_full) )  #this is the mean squared error, which is used to compute variance covariance matrix
-  var_cov = esti_mse * solve(t(X_full) %*% X_full) #this is the variance-covariance matrix of our X.
-  coeff_se = sqrt(diag(var_cov))   #this is the standard error of our coefficient
-  return(list(se=coeff_se , residual = residual, mse=esti_mse))
-}
-
-compute_degree_freedom = function(X){
-  #this function works to compute the degree freedom of residual, model
-  return(list(df_residual=nrow(X)-ncol(X)-1 , df_model = ncol(X)))
-}
-
-compute_t_statistics = function(betas , standard_error, df_residual){
-  t_stat = betas/standard_error
-  p_value = 2*pt(abs(t_stat), df_residual, lower.tail=F)
-  return(list(t_stat=t_stat, p_value=p_value))
-}
-
-model_significance = function(se_object, y, df_object){
-  #this function will be used to calculate R^2, adjusted R^2, and conduct a F-test.
-  rsqr = 1 - sum(se_object[['residual']]^2) / sum( (y-mean(y))^2 )
-  adj_rsqr = 1 - ( (1-rsqr)*( length(y)-1 ) / (df_object[['df_residual']])  )
-  F_stat = sum( (-se_object[['residual']]+y-mean(y)  )^2 )/sum(se_object[['residual']]^2)/df_object[['df_model']]*df_object[['df_residual']]
-  F_stat_p_value = pf(F_stat, df_object[['df_model']] ,df_object[['df_residual']], lower.tail=F)
-  return(list(F_stat = F_stat, Multiple_R_squared = rsqr, Adjusted_R_squared=adj_rsqr, F_stat_p_value = F_stat_p_value))
-}
-
-transform_data = function(X){
-  #first check if there's factor type, and then transform data.
-  factor_features = c()
-  for(i in colnames(X)){
-    if(class(X[[i]]) == "factor"){
-      factor_features = c(factor_features, i)
-    }
-  }
-  if (length(factor_features)==0){
-    return(X)
-  }else{
-    formula = paste( c( '~0',paste(factor_features,collapse ="+" ) ),collapse="+" )
-    formula = as.formula(formula)
-    one_hot = model.matrix(formula,data=X)
-    return(cbind( X[, !colnames(X) %in% factor_features] , one_hot[,-1] )
-    )
-  }
-}
-
-regression_predict = function(regression_object, X){
-  if( class(X) != "data.frame"   ) return('your input data should be a data.frame, not a matrix or an array')
-  predictor_names = regression_object$feature_names
-  input_names = colnames(X)
-  if(!all(predictor_names %in% input_names)) return('Your input does not match the regression model')
-  X = X[predictor_names]
-  X = transform_data(X)
-  X = as.matrix(X)
-  intercept = rep(1, dim(X)[1] )
-  X_full = cbind( intercept , X )
-  yhat = X_full%*% regression_object$coefficients[,1]
-  return(yhat)
-}
 
 linear_regression = function(X, y){
   #this function will try its best to mimic the behavior of our most famous 'lm' function
