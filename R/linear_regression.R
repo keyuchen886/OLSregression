@@ -1,21 +1,3 @@
-# 'linear_regression'
-#'
-#'Compute the OLS linear regression for a given X and y
-#'
-#'@param X input X, it should be a data.frame, otherwise the function will not compute
-#'@param y input y, this is the respond variable.
-#'@return it will return a list object which contains coefficient of beta, and the other important summary statistics of the model
-#'@export
-
-simple_ols = function(X ,y){
-  #this function will take input of matrix x and y
-  #to inplement a simpliest case of ordinary linear regression
-  #this function should not be directly called
-  intercept = rep(1, length(y) )
-  X = cbind(intercept, X)  #this is the full X matrix
-  betas = solve(t(X) %*% X) %*% t(X) %*% y
-  return(betas)
-}
 
 compute_standard_error = function(X, y, betas){
   #this function will take input of matrix x and respond y
