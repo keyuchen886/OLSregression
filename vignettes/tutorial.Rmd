@@ -14,6 +14,121 @@ knitr::opts_chunk$set(
 )
 ```
 
+The OLSregression package is a package to mimic the famout lm() function in R. This package enables you to train a linear regression on numeric/categorical dataset and will return all the coefficients. It will also generate t-test and p-value for each predictor, and the overall F-test and R-square and adjusted R-square to evaluate model, just like lm function does. Besides that, the package include some basic function to transform data, predict, and the most simple OLS using matrix.
+
+Let's first see an example using Boston dataset in MASS package. Boston dataset contains all numeric features.
+
 ```{r setup}
 library(OLSregression)
+library(MASS)
+head(Boston)
+```
+
+For this dataset, we want to use all columns except the last 'medv' as predictors, and 'medv' as response variable. The linear_regression function need two inputs, the first one being your training X, and the second being your training y. We also apply a lm() function to see the difference. In fact, if the inputx is not a data.frame, the function will not process and return an error.
+
+```{r}
+lin_reg_object = linear_regression(Boston[,-ncol(Boston)] , Boston[,ncol(Boston)])
+lm.mod = lm(medv~. , data=Boston)
+sum_lm.mod = summary(lm.mod)
+sum_lm.mod
+```
+
+We can see that the tradintional lm function includes all estimated coefficients and their standard error, t-stat, p-value. This is also computed in our linear_regression function.
+
+```{r}
+lin_reg_object$coefficients
+```
+
+We can see from the above, our estimate is the same but with more digit of precesion. The values are not exactly the same due to the different computation method used in these two function. However, the result is mathematically the same, and let's use all.equal to test it. In fact, our coefficient matrix is exactly the same as the one provided in summary function. For each column, we check if they are exactly the same.
+
+```{r}
+isTRUE( all.equal( as.numeric( sum_lm.mod$coefficients[,1] ) , lin_reg_object$coefficients[,1] ) )
+isTRUE( all.equal( as.numeric( sum_lm.mod$coefficients[,2] ) , lin_reg_object$coefficients[,2] ) )
+isTRUE( all.equal( as.numeric( sum_lm.mod$coefficients[,3] ) , lin_reg_object$coefficients[,3] ) )
+isTRUE( all.equal( as.numeric( sum_lm.mod$coefficients[,4] ) , lin_reg_object$coefficients[,4] ) )
+```
+
+The result shows they are the same. While the summary function provides a comprehensive understanding of model coefficient, it also includes a quantile description of residual. Moreover, the summary function include an overall model analysis by computing residual standard error and conduct an overall F-test.
+They are also included as follow.
+
+```{r}
+lin_reg_object$residual
+lin_reg_object$F_stat
+lin_reg_object$Multiple_R_squared
+lin_reg_object$Adjusted_R_squared
+```
+
+From the above result, we see they are the same as the one in summary function. Hence, we see the use of linear_regression() in a dataset contains all continuous variable. It produces the same result as lm() and summary() function. Let's first see how efficient they are on the same dataset. Since the object is not completely the same, we cannot use bench::mark() directly. So, we use proc.time() to test the time instead.
+
+```{r}
+num_trials = 3000
+time0 = proc.time()
+for (i in (1:num_trials)){
+  temp = linear_regression(Boston[,-ncol(Boston)], Boston[,ncol(Boston)])
+}
+time1 = proc.time()
+for (i in (1:num_trials)){
+  temp2 = summary(lm(medv~.,data=Boston))
+}
+time2 = proc.time()
+print('our linear_regression function takes time:')
+print(time1-time0)
+print('the lm function takes time: ')
+print(time2 - time1)
+
+```
+
+From the above result, we see our function takes slightly less time than the lm function and the summary function. This could possibly due to two effects: our function only mimic the obvious operation the lm() and summary() function do in a linear regression case. However, the lm() and summary() function also cover other objects which needs more operation.
+
+Also, our linear_regression() support dummy variable operation. Let's see an example using Salaries dataset in package: carData
+
+```{r}
+library(carData)
+head(Salaries)
+slar_mod = lm(salary~., data=Salaries)
+summary(slar_mod)
+```
+
+For categorical data, the lm function create n-1 level for one categorical variable with level=n. We will do the same thing. We can see the results are mathematically the same.
+
+```{r}
+linear_sal = linear_regression(Salaries[,-ncol(Salaries)] , Salaries[,ncol(Salaries)])
+linear_sal$coefficients
+```
+
+Our package also include a regression_predict() function which will take the result from linear_regression() and new data to predict. If the newdata does not have all the predictor columns, then this function will raise an error.
+
+```{r}
+regression_predict(linear_sal ,Salaries[1:10,-ncol(Salaries)]  )
+regression_predict(linear_sal , Boston)
+```
+
+To better understand our algorithm's efficiency, we will do the following: we make up a large dataset with a size of 5,000,000 * 10, and we compare the time efficiency of two function.
+```{r}
+set.seed(123);
+n = 5000000;
+p = 10;
+x = matrix(rnorm(n * p), n, p) 
+bet = rep(1, p)
+y = c(x %*% bet) + rnorm(n)
+X = data.frame( cbind(x,y) )
+time0 = proc.time()
+temp = summary( lm(y~. ,  data=X) )
+time1 = proc.time()
+print(time1-time0)
+temp = linear_regression(X[,-ncol(X)], X[,ncol(X)])
+time2 = proc.time()
+print(time2-time1)
+
+```
+
+We can see, from the above large data, our method is actually faster than the lm() function. We have also provided some other functions to use, which are mostly used in the internal calculation of linear_regression() function.
+
+1. simple_ols() takes two inputs. The first should be a matrix, and the second should be the respond variable y. It will simpily compute the coefficients.
+2. transform_data() this function will take a data.frame as input and encode those categorical variables as we described earlier. The output will be a data.frame.
+
+```{r}
+simple_ols(x , y )
+head( transform_data(Salaries) )
+
 ```
