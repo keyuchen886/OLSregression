@@ -14,4 +14,4 @@ Suggests:
     knitr,
     rmarkdown
 VignetteBuilder: knitr
-Imports: MASS, CarData
+Imports: MASS, carData
