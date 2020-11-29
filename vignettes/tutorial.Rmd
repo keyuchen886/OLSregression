@@ -104,6 +104,7 @@ regression_predict(linear_sal , Boston)
 ```
 
 To better understand our algorithm's efficiency, we will do the following: we make up a large dataset with a size of 5,000,000 * 10, and we compare the time efficiency of two function.
+
 ```{r}
 set.seed(123);
 n = 5000000;

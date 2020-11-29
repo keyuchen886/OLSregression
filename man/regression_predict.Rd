@@ -26,5 +26,6 @@ X=Boston[,-ncol(Boston)]
 y=Boston[,ncol(Boston)]
 reg_model = linear_regression(X,y)
 yhat = regression_predict(reg_model, X)
-If the new data contains columns that are not used, it will be fine, as long as it contains all predictors used in the model.
+#If the new data contains more than necessary columns that are not used, it will be fine.
+#'@export
 }

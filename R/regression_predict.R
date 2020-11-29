@@ -14,8 +14,8 @@
 #'y=Boston[,ncol(Boston)]
 #'reg_model = linear_regression(X,y)
 #'yhat = regression_predict(reg_model, X)
-#'If the new data contains columns that are not used, it will be fine, as long as it contains all predictors used in the model.
-#'@export
+#'#If the new data contains more than necessary columns that are not used, it will be fine.
+#'#'@export
 
 regression_predict = function(regression_object, X){
   if( class(X) != "data.frame"   ) return('your input data should be a data.frame, not a matrix or an array')

@@ -21,5 +21,4 @@ In fact, this function is used internally in linear_regression() function to cha
 \examples{
 library(carData)
 transform_data(Salaries)
-In fact, using object other than a data.frame will raise an error.
 }

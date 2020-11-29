@@ -10,7 +10,6 @@
 #'@examples
 #'library(carData)
 #'transform_data(Salaries)
-#'In fact, using object other than a data.frame will raise an error.
 #'@export
 
 transform_data = function(X){

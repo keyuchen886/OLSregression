@@ -25,5 +25,4 @@ library(MASS)
 X=Boston[,-ncol(Boston)]
 y=Boston[,ncol(Boston)]
 linear_regression(X,y)
-In fact, using object other than a data.frame will raise an error.
 }

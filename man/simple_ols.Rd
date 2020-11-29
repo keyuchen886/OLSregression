@@ -19,6 +19,4 @@ Compute the OLS linear regression for a given X and y. This is the most simple c
 }
 \examples{
 simple_ols(matrix(c(1,3,7,4,6,3),3,2), c(3,1,2))
-simple_ols(data.frame(c(1,3,7,4,6,3),3,2) , c(3,1,2))
-In fact, using the data.frame object will raise an error.
 }
